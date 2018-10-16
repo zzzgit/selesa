@@ -13,8 +13,8 @@ module.exports = {
 				normal: { type: 'logLevelFilter', appender: 'usual', level: 'trace'/* , maxLevel: 'warn' */ },
 				emergencies: { type: 'dateFile', filename: `${logDir}/error.log`, pattern: '.yyyy-MM-dd', daysToKeep: 30, keepFileExt: true, layout: aLayout },
 				error: { type: 'logLevelFilter', appender: 'emergencies', level: 'error' },
-				"console.log": { type: 'console', level: 'warn' },
-				console: { type: 'logLevelFilter', appender: 'console.log', level: 'warn' },
+				"console.log": { type: 'console', layout: { type: 'pattern', pattern: '%[%m%]'}  },
+				console: { type: 'logLevelFilter', appender: 'console.log', level: 'warn'},
 			},
 			categories: { default: { appenders: ['normal', 'error', 'console'], level: 'trace' } }
 		})

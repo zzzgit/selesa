@@ -1,6 +1,6 @@
 {
   "name": "selesa",
-  "version": "0.0.10",
+  "version": "0.0.12",
   "description": "a npm package for .bashrc synchronization",
   "repository": {
     "type": "git",
@@ -8,7 +8,6 @@
   },
   "main": "index.js2",
   "scripts": {
-    "check": "node ./build/ensure.env.js",
     "touch": "shx touch ~/.selesarc",
     "install": "npm run touch",
     "test": "echo \"Error: no test specified\" && exit 1",

@@ -21,7 +21,7 @@ const configFile = path.resolve(homedir, ".selesarc")
 
 
 const logger = logFactory.getLogger(log)
-const time_s = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+const time_s = "v" + new Date().toISOString().replace(/\..+/, '').replace(/:/g, '.')
 let meta = {}
 let fetchData_prm = null
 
@@ -147,7 +147,7 @@ const pushVim = () => {
 	})
 }
 
-
+logger.warn(`\r\n[selesa][version]: ${require('../package.json').version}\r\n`)
 yargs.usage('usage: $0 <cmd>')
 	.command('upload [part]', 'upload your configurations to cloud!', (yargs) => {
 		yargs.positional('part', {
