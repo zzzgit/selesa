@@ -1,14 +1,12 @@
 const octokit = require('@octokit/rest')()
 
 const desc = "selesa cloud data"
-const version = require("../package.json").version
 const login = (token) => {
 	octokit.authenticate({
 		type: 'token',
 		token: token
 	})
 }
-
 
 
 module.exports = {
@@ -27,40 +25,15 @@ module.exports = {
 			return result.data.id
 		})
 	},
-	uploadBash(token, id, bashrcContent, bashPrContent) {
+	update(token, id, files) {
 		login(token)
 		return octokit.gists.edit({
 			gist_id: id,
 			description: desc,
-			files: {
-				"..selesa": {
-					content: JSON.stringify({ "lastUpload": new Date().toISOString(), "version": version })
-				},
-				".bashrc": {
-					content: bashrcContent
-				},
-				".bash_profile": {
-					content: bashPrContent
-				},
-			}
+			files,
 		})
 	},
-	uploadVim(token, id, vimContent) {
-		login(token)
-		return octokit.gists.edit({
-			gist_id: id,
-			description: desc,
-			files: {
-				"..selesa": {
-					content: JSON.stringify({ "lastUpload": new Date().toISOString(), "version": version })
-				},
-				".vimrc": {
-					content: vimContent
-				},
-			}
-		})
-	},
-	download(token, id) {
+	query(token, id) {
 		login(token)
 		return octokit.gists.get({
 			gist_id: id,

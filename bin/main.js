@@ -22,6 +22,7 @@ const configFile = path.resolve(homedir, ".selesarc")
 
 const logger = logFactory.getLogger(log)
 const time_s = "v" + new Date().toISOString().replace(/\..+/, '').replace(/:/g, '.')
+const version = require("../package.json").version
 let meta = {}
 let fetchData_prm = null
 
@@ -35,9 +36,9 @@ const ensureFiles = () => {
 		.then(() => fsx.ensureFile(originalVimrc))
 }
 
-const ensureFetch = ()=>{
-	if(!fetchData_prm){
-		fetchData_prm = gist.download(meta.token, meta.id)
+const ensureFetch = () => {
+	if (!fetchData_prm) {
+		fetchData_prm = gist.query(meta.token, meta.id)
 	}
 	return fetchData_prm
 }
@@ -76,6 +77,37 @@ const checkConfiguration = () => {
 	// })
 }
 
+const push = (parts) => {
+	let result = checkConfiguration()
+	if (result) {
+		return Promise.reject(result)
+	}
+	logger.info(`[selesa]: begin to upload, ${parts}`)
+	const options = { encoding: "utf8" }
+	const reading = []
+	const keys = []
+	if (["vim", "all"].includes(parts)) {
+		reading.push(fsPromises.readFile(originalVimrc, options))
+		keys.push(".vimrc")
+	}
+	if (["bash", "all"].includes(parts)) {
+		reading.push(fsPromises.readFile(originalBashrc, options))
+		keys.push(".bashrc")
+		reading.push(fsPromises.readFile(originalBashProfile, options))
+		keys.push(".bash_profile")
+	}
+	return Promise.all(reading).then(arr => {
+		const files = {}
+		keys.forEach((key, index) => {
+			files[key] = { content: arr[index] }
+		})
+		files["..selesa"] = {
+			content: JSON.stringify({ "lastUpload": new Date().toISOString(), "version": version })
+		}
+		return gist.update(meta.token, meta.id, files)
+	})
+}
+
 const pullAll = () => {
 	const result = checkConfiguration()	// use promise instead
 	if (result) {
@@ -83,15 +115,6 @@ const pullAll = () => {
 	}
 	logger.info(`[selesa]: begin to download all configuration`)
 	return pullVim().then(() => pullBash())
-}
-
-const pushAll = () => {
-	const result = checkConfiguration()
-	if (result) {
-		return Promise.reject(result)
-	}
-	logger.info(`[selesa]: begin to upload all configuration`)
-	return pushVim().then(() => pushBash())
 }
 
 const pullVim = () => {
@@ -118,36 +141,14 @@ const pullBash = () => {
 		.then(() => fsPromises.copyFile(originalBashProfile, path.resolve(cache, `.bash_profile.${time_s}`)))
 		.then(() => fsPromises.copyFile(originalBashrc, path.resolve(cache, `.bashrc.${time_s}`)))
 		.then(() => ensureFetch())
-		.then(content=>{
+		.then(content => {
 			return fsPromises.writeFile(originalBashProfile, content[".bash_profile"])
-				.then(()=>fsPromises.writeFile(originalBashrc, content[".bashrc"]))
+				.then(() => fsPromises.writeFile(originalBashrc, content[".bashrc"]))
 		})
 }
 
-const pushBash = () => {
-	let result = checkConfiguration()
-	if (result) {
-		return Promise.reject(result)
-	}
-	logger.info(`[selesa]: begin to upload bash configuration`)
-	const options = { encoding: "utf8" }
-	return Promise.all([fsPromises.readFile(originalBashrc, options), fsPromises.readFile(originalBashProfile, options)]).then(arr => {
-		return gist.uploadBash(meta.token, meta.id, arr[0], arr[1])
-	})
-}
 
-const pushVim = () => {
-	let result = checkConfiguration()
-	if (result) {
-		return Promise.reject(result)
-	}
-	logger.info(`[selesa]: begin to upload vim configuration`)
-	return fsPromises.readFile(originalBashrc, { encoding: "utf8" }).then(content => {
-		return gist.uploadVim(meta.token, meta.id, content)
-	})
-}
-
-logger.warn(`\r\n[selesa][version]: ${require('../package.json').version}\r\n`)
+logger.warn(`\r\n[selesa][version]: ${version}\r\n`)
 yargs.usage('usage: $0 <cmd>')
 	.command('upload [part]', 'to upload your configurations to cloud', (yargs) => {
 		yargs.positional('part', {
@@ -160,15 +161,15 @@ yargs.usage('usage: $0 <cmd>')
 	}, (argv) => {
 		switch (argv.part) {
 		case "all":
-			pushAll().catch(e => (delete e.headers) && logger.error(`[selesa][up]: failed to upload all parts:`, e))
+			push("all").catch(e => (delete e.headers) && logger.error(`[selesa][up]: failed to upload all parts:`, e))
 			break
 
 		case "vim":
-			pushVim().catch(e => (delete e.headers) && logger.error(`[selesa][up]: failed to upload part vim:`, e))
+			push("vim").catch(e => (delete e.headers) && logger.error(`[selesa][up]: failed to upload part vim:`, e))
 			break
 
 		case "bash":
-			pushBash().catch(e => (delete e.headers) && logger.error(`[selesa][up]: failed to upload part bash:`, e))
+			push("bash").catch(e => (delete e.headers) && logger.error(`[selesa][up]: failed to upload part bash:`, e))
 			break
 
 		default:
