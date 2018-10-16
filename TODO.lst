@@ -1,0 +1,3 @@
+remove cache files
+only make one single API access when upload multy parts of configuraion 
+progress indictor
