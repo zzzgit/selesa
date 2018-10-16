@@ -149,7 +149,7 @@ const pushVim = () => {
 
 logger.warn(`\r\n[selesa][version]: ${require('../package.json').version}\r\n`)
 yargs.usage('usage: $0 <cmd>')
-	.command('upload [part]', 'upload your configurations to cloud!', (yargs) => {
+	.command('upload [part]', 'to upload your configurations to cloud', (yargs) => {
 		yargs.positional('part', {
 			type: 'string',
 			choices: ["all", "vim", "bash"],
@@ -175,7 +175,7 @@ yargs.usage('usage: $0 <cmd>')
 			break
 		}
 	})
-	.command('download [part]', 'download your configurations from cloud!', (yargs) => {
+	.command('download [part]', 'to download your configurations from cloud', (yargs) => {
 		yargs.positional('part', {
 			type: 'string',
 			alias: "p",
