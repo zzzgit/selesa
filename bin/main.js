@@ -35,6 +35,7 @@ const ensureFiles = () => {
 		.then(() => fsx.ensureFile(originalBashrc))
 		.then(() => fsx.ensureFile(originalVimrc))
 }
+ensureFiles()
 
 const ensureFetch = () => {
 	if (!fetchData_prm) {

@@ -1,6 +1,6 @@
 {
   "name": "selesa",
-  "version": "0.0.14",
+  "version": "0.0.28",
   "description": "a npm package for .bashrc synchronization",
   "repository": {
     "type": "git",
@@ -9,7 +9,7 @@
   "main": "index.js2",
   "scripts": {
     "touch": "shx touch ~/.selesarc",
-    "install": "npm run touch",
+    "install": "echo  ",
     "test": "echo \"Error: no test specified\" && exit 1",
     "uninstall": "shx rm ~/.selesarc && shx rm -rf ~/.selesa && node ./uninstall.js"
   },
