@@ -7,6 +7,7 @@ const fsPromises = fs.promises
 const child_process = require('child_process')
 const yargs = require("yargs")
 const ini = require('ini')
+const nodemailer = require('nodemailer')
 const logFactory = require("./log.js")
 const gist = require("./gist.js")
 
@@ -267,6 +268,10 @@ yargs.usage('usage: $0 <cmd>')
 				})
 			})
 			.demandCommand(1, 'You need at least one command before moving on')
+	})
+	.command(["email", "send"], "to send your log files to the author", () => { }, () => {
+
+		logger.info(`[selesa][email]: .`)
 	})
 	.demandCommand(1, 'You need at least one command before moving on')
 	.scriptName("selesa")
