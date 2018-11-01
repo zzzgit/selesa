@@ -7,7 +7,6 @@ const fsPromises = fs.promises
 const child_process = require('child_process')
 const yargs = require("yargs")
 const ini = require('ini')
-const nodemailer = require('nodemailer')
 const logFactory = require("./log.js")
 const gist = require("./gist.js")
 
