@@ -9,6 +9,10 @@ const yargs = require("yargs")
 const ini = require('ini')
 const logFactory = require("./log.js")
 const gist = require("./gist.js")
+const updateNotifier = require('update-notifier')
+
+const pkg = require('../package.json')
+updateNotifier({ pkg }).notify()
 
 const homedir = os.homedir()
 const originalVimrc = path.resolve(homedir, ".vimrc")
