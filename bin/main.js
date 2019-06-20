@@ -1,9 +1,11 @@
 #!/usr/bin/env node
+/* eslint-disable security/detect-non-literal-fs-filename */
 const os = require("os")
 const path = require("path")
 const fs = require("fs")
 const fsx = require("fs-extra")
 const fsPromises = fs.promises
+// eslint-disable-next-line security/detect-child-process
 const child_process = require('child_process')
 const yargs = require("yargs")
 const ini = require('ini')
@@ -12,7 +14,7 @@ const gist = require("./gist.js")
 const updateNotifier = require('update-notifier')
 
 const pkg = require('../package.json')
-updateNotifier({ pkg }).notify()
+updateNotifier({pkg, updateCheckInterval: 1000}).notify()
 
 const homedir = os.homedir()
 const originalVimrc = path.resolve(homedir, ".vimrc")
@@ -25,7 +27,9 @@ const configFile = path.resolve(homedir, ".selesarc")
 
 
 const logger = logFactory.getLogger(log)
-const time_s = "v" + new Date().toISOString().replace(/\..+/, '').replace(/:/g, '.')
+const time_s = "v" + new Date().toISOString()
+	.replace(/\..+/, '')
+	.replace(/:/g, '.')
 const version = require("../package.json").version
 let meta = {}
 let fetchData_prm = null
@@ -50,7 +54,7 @@ const ensureFetch = () => {
 
 const writeConfiguration = (config) => {
 	logger.info(`[selesa][write]: \r\n${JSON.stringify(config)}`)
-	fs.writeFileSync(configFile, ini.stringify(config, { section: '' }))
+	fs.writeFileSync(configFile, ini.stringify(config, {section: ''}))
 }
 
 const checkConfiguration = () => {
@@ -65,7 +69,7 @@ const checkConfiguration = () => {
 	}
 	meta = {
 		token: config.token,
-		id: config.gistid
+		id: config.gistid,
 	}
 	return null
 	// return new Promise((resolve, reject) => {
@@ -83,12 +87,12 @@ const checkConfiguration = () => {
 }
 
 const push = (parts) => {
-	let result = checkConfiguration()
+	const result = checkConfiguration()
 	if (result) {
 		return Promise.reject(result)
 	}
 	logger.info(`[selesa]: begin to upload, ${parts}`)
-	const options = { encoding: "utf8" }
+	const options = {encoding: "utf8"}
 	const reading = []
 	const keys = []
 	if (["vim", "all"].includes(parts)) {
@@ -101,13 +105,13 @@ const push = (parts) => {
 		reading.push(fsPromises.readFile(originalBashProfile, options))
 		keys.push(".bash_profile")
 	}
-	return Promise.all(reading).then(arr => {
+	return Promise.all(reading).then((arr) => {
 		const files = {}
 		keys.forEach((key, index) => {
-			files[key] = { content: arr[index] }
+			files[key] = {content: arr[index]}
 		})
 		files["..selesa"] = {
-			content: JSON.stringify({ "lastUpload": new Date().toISOString(), "version": version })
+			content: JSON.stringify({"lastUpload": new Date().toISOString(), "version": version}),
 		}
 		return gist.update(meta.token, meta.id, files)
 	})
@@ -123,7 +127,7 @@ const pullAll = () => {
 }
 
 const pullVim = () => {
-	let result = checkConfiguration()
+	const result = checkConfiguration()
 	if (result) {
 		return Promise.reject(result)
 	}
@@ -131,13 +135,13 @@ const pullVim = () => {
 	return ensureFiles()
 		.then(() => fsPromises.copyFile(originalVimrc, path.resolve(cache, `.vimrc.${time_s}`)))
 		.then(() => ensureFetch())
-		.then(content => {
+		.then((content) => {
 			return fsPromises.writeFile(originalBashProfile, content[".vimrc"])
 		})
 }
 
 const pullBash = () => {
-	let result = checkConfiguration()
+	const result = checkConfiguration()
 	if (result) {
 		return Promise.reject(result)
 	}
@@ -146,7 +150,8 @@ const pullBash = () => {
 		.then(() => fsPromises.copyFile(originalBashProfile, path.resolve(cache, `.bash_profile.${time_s}`)))
 		.then(() => fsPromises.copyFile(originalBashrc, path.resolve(cache, `.bashrc.${time_s}`)))
 		.then(() => ensureFetch())
-		.then(content => {
+		.then((content) => {
+			// eslint-disable-next-line promise/no-nesting
 			return fsPromises.writeFile(originalBashProfile, content[".bash_profile"])
 				.then(() => fsPromises.writeFile(originalBashrc, content[".bashrc"]))
 		})
@@ -161,20 +166,20 @@ yargs.usage('usage: $0 <cmd>')
 			choices: ["all", "vim", "bash"],
 			alias: "p",
 			default: 'all',
-			describe: 'which part do you want to upload'
+			describe: 'which part do you want to upload',
 		})
 	}, (argv) => {
 		switch (argv.part) {
 		case "all":
-			push("all").catch(e => (delete e.headers) && logger.error(`[selesa][up]: failed to upload all parts:`, e))
+			push("all").catch(e => delete e.headers && logger.error(`[selesa][up]: failed to upload all parts:`, e))
 			break
 
 		case "vim":
-			push("vim").catch(e => (delete e.headers) && logger.error(`[selesa][up]: failed to upload part vim:`, e))
+			push("vim").catch(e => delete e.headers && logger.error(`[selesa][up]: failed to upload part vim:`, e))
 			break
 
 		case "bash":
-			push("bash").catch(e => (delete e.headers) && logger.error(`[selesa][up]: failed to upload part bash:`, e))
+			push("bash").catch(e => delete e.headers && logger.error(`[selesa][up]: failed to upload part bash:`, e))
 			break
 
 		default:
@@ -187,20 +192,20 @@ yargs.usage('usage: $0 <cmd>')
 			alias: "p",
 			choices: ["all", "vim", "bash"],
 			default: 'all',
-			describe: 'which part do you want to download'
+			describe: 'which part do you want to download',
 		})
 	}, (argv) => {
 		switch (argv.part) {
 		case "all":
-			pullAll().catch(e => (delete e.headers) && logger.error(`[selesa][down]: failed to download all parts:`, e))
+			pullAll().catch(e => delete e.headers && logger.error(`[selesa][down]: failed to download all parts:`, e))
 			break
 
 		case "vim":
-			pullVim().catch(e => (delete e.headers) && logger.error(`[selesa][down]: failed to download part vim:`, e))
+			pullVim().catch(e => delete e.headers && logger.error(`[selesa][down]: failed to download part vim:`, e))
 			break
 
 		case "bash":
-			pullBash().catch(e => (delete e.headers) && logger.error(`[selesa][down]: failed to download part bash:`, e))
+			pullBash().catch(e => delete e.headers && logger.error(`[selesa][down]: failed to download part bash:`, e))
 			break
 
 		default:
@@ -212,11 +217,11 @@ yargs.usage('usage: $0 <cmd>')
 			yargs.positional('token', {
 				type: 'string',
 				alias: "t",
-				describe: 'to set the token for your gist account'
+				describe: 'to set the token for your gist account',
 			}).positional("gistid", {
 				type: "string",
 				alias: ["id", "i"],
-				describe: "to set the gistid, '-1' to create a new one automatically"
+				describe: "to set the gistid, '-1' to create a new one automatically",
 			})
 		}, (argv) => {
 			const config = ini.parse(fs.readFileSync(configFile, 'utf-8'))
@@ -231,9 +236,9 @@ yargs.usage('usage: $0 <cmd>')
 					config["gistid"] = argv["gistid"]
 					return writeConfiguration(config)
 				}
-				return gist.createGist(config.token).then(id => {
+				return gist.createGist(config.token).then((id) => {
 					config["gistid"] = id
-					writeConfiguration(config)
+					return writeConfiguration(config)
 				})
 			}
 		})
@@ -241,11 +246,11 @@ yargs.usage('usage: $0 <cmd>')
 				yargs.positional('token', {
 					type: 'string',
 					alias: "t",
-					describe: 'to get the token for your gist account'
+					describe: 'to get the token for your gist account',
 				}).positional("gistid", {
 					type: "string",
 					alias: ["id", "i"],
-					describe: "to get the gistid"
+					describe: "to get the gistid",
 				})
 			}, (argv) => {
 				const config = ini.parse(fs.readFileSync(configFile, 'utf-8'))
@@ -261,19 +266,18 @@ yargs.usage('usage: $0 <cmd>')
 				}
 			})
 			.command(["open", "edit"], "to edit .selesarc manually", () => { }, () => {
-				let editor = process.env.EDITOR || 'vim'
+				const editor = process.env.EDITOR || 'vim'
 				logger.info(`[selesa][config][open]: ${editor} will be used as the editor`)
-				let child = child_process.spawn(editor, [configFile], {
-					stdio: 'inherit'
+				const child = child_process.spawn(editor, [configFile], {
+					stdio: 'inherit',
 				})
-				return child.on('exit', function () {
+				return child.on('exit', function() {
 					logger.info(`[selesa][config][open]: finished to edit the configuration`)
 				})
 			})
 			.demandCommand(1, 'You need at least one command before moving on')
 	})
 	.command(["email", "send"], "to send your log files to the author", () => { }, () => {
-
 		logger.info(`[selesa][email]: .`)
 	})
 	.demandCommand(1, 'You need at least one command before moving on')

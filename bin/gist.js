@@ -4,7 +4,7 @@ const desc = "selesa cloud data"
 const login = (token) => {
 	octokit.authenticate({
 		type: 'token',
-		token: token
+		token: token,
 	})
 }
 
@@ -16,12 +16,12 @@ module.exports = {
 			description: desc,
 			files: {
 				"..selesa": {
-					content: ".selesa place holder"
-				}
+					content: ".selesa place holder",
+				},
 			},
-			public: false
-		}).then(result => {
-			//result.status !== 201
+			public: false,
+		}).then((result) => {
+			// result.status !== 201
 			return result.data.id
 		})
 	},
@@ -37,7 +37,7 @@ module.exports = {
 		login(token)
 		return octokit.gists.get({
 			gist_id: id,
-		}).then(result => {
+		}).then((result) => {
 			return {
 				".bashrc": result.data.files[".bashrc"].content,
 				".bash_profile": result.data.files[".bash_profile"].content,
