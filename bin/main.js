@@ -190,7 +190,7 @@ const downloadGit = async()=> {
 }
 
 const backupAndReplace = async(fetched, fileName, originalFile)=> {
-	await createBackup(originalFile, selesaPaths.selesaCache, fileName, time_s)
+	await createBackup(originalFile, selesaPaths.selesaBackupDir, fileName, time_s)
 	await fsPromises.writeFile(originalFile, fetched[fileName])
 }
 
