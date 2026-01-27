@@ -112,6 +112,10 @@ const detectSelesaConfigPath = ()=> {
 	}
 }
 
+const detectBashConfigFile = ()=> {
+	return path.join(homedir, '.bashrc')
+}
+
 const _getTraditionalConfigDirUnix = ()=> {
 	return homedir
 }
@@ -176,6 +180,7 @@ export {
 	detectTigConfigFile,
 	detectHelixConfigDir,
 	detectSelesaConfigPath,
+	detectBashConfigFile,
 	isWindows11,
 	isWindows,
 

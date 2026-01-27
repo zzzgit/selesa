@@ -9,6 +9,7 @@ import gist from './gist.js'
 import { ensureDir } from 'dakini'
 import {
 	createBackup,
+	detectBashConfigFile,
 	detectGitConfigGlobalFile,
 	detectHelixConfigDir,
 	detectSelesaConfigPath,
@@ -32,8 +33,7 @@ if(isWindows()){
 const getFilePathMap = (part)=> {
 	const mappings = {
 		bash: {
-			// '.bashrc': detectGitConfigGlobalFile(),
-			// '.bash_profile': paths.originalBashProfile,
+			'.bashrc': detectBashConfigFile(),
 		},
 		helix: {
 			'helix_config.toml': path.join(detectHelixConfigDir(), 'config.toml'),
@@ -140,12 +140,9 @@ const fetchAll = async()=> {
 const downloadAll = async()=> {
 	const content = await fetchAll()
 	const filePathMap = getFilePathMap('all')
-	// if (content['.bash_profile']){
-	// 	await backupAndReplace(content, '.bash_profile', originalBashProfile)
-	// }
-	// if (content['.bashrc']){
-	// 	await backupAndReplace(content, '.bashrc', originalBashrc)
-	// }
+	if (content['.bashrc']){
+		await backupAndReplace(content, '.bashrc', filePathMap.get('.bashrc'))
+	}
 	if (content['helix_config.toml']){
 		await backupAndReplace(content, 'helix_config.toml', filePathMap.get('helix_config.toml'))
 	}
@@ -161,13 +158,11 @@ const downloadAll = async()=> {
 }
 
 const downloadBash = async()=> {
-	// const content = await fetchAll()
-	// if(content['.bashrc']){
-	// 	await backupAndReplace(content, '.bashrc', originalBashrc)
-	// }
-	// if(content['.bash_profile']){
-	// 	await backupAndReplace(content, '.bash_profile', originalBashProfile)
-	// }
+	const content = await fetchAll()
+	const filePathMap = getFilePathMap('bash')
+	if(content['.bashrc']){
+		await backupAndReplace(content, '.bashrc', filePathMap.get('.bashrc'))
+	}
 }
 
 const downloadHelix = async()=> {
