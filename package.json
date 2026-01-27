@@ -1,39 +1,47 @@
 {
   "name": "selesa",
-  "version": "0.0.28",
+  "version": "1.0.0",
   "description": "a npm package for .bashrc synchronization",
   "repository": {
     "type": "git",
     "url": "https://github.com/zzzgit/selesa"
   },
-  "main": "index.js2",
+  "type": "module",
   "scripts": {
-    "touch": "shx touch ~/.selesarc",
+    "touch": "shx touch ~/.config/selesa/config.ini",
     "install": "echo  ",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "uninstall": "shx rm ~/.selesarc && shx rm -rf ~/.selesa && node ./uninstall.js"
+    "test": "dotenv -e .env.test -- jasmine",
+    "uninstall": "shx rm ~/.config/selesa/config.ini && shx rm -rf ~/.selesa && node ./uninstall.js"
   },
   "bugs": "https://github.com/zzzgit/selesa/issues",
   "keywords": [
     "shell",
-    "terminal"
+    "terminal",
+    "sync"
   ],
   "bin": {
     "selesa": "./bin/main.js"
   },
   "engines": {
-    "npm": ">=6.1.0",
-    "node": ">=10.5"
+    "npm": ">=10",
+    "node": ">=22"
   },
   "author": "jonkee",
   "license": "ISC",
   "dependencies": {
-    "@octokit/rest": "^21.1.0",
-    "fs-extra": "^10.0.0",
-    "ini": "^2.0.0",
-    "log4js": "^6.4.1",
-    "nodemailer": "^6.7.2",
-    "shx": "^0.3.4",
-    "yargs": "^17.3.1"
+    "@octokit/rest": "^22.0.1",
+    "dakini": "^1.0.5",
+    "ini": "^6.0.0",
+    "log4js": "^6.9.1",
+    "nodemailer": "^7.0.11",
+    "yargs": "^18.0.0"
+  },
+  "devDependencies": {
+    "dotenv-cli": "^11.0.0",
+    "eslint": "^9.39.1",
+    "eslint-config-janus": "^9.0.20",
+    "eslint-plugin-mocha": "^11.2.0",
+    "jasmine": "^5.13.0",
+    "shx": "^0.4.0"
   }
 }

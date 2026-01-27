@@ -1,47 +1,63 @@
-const octokit = require('@octokit/rest')()
+import { Octokit } from '@octokit/rest'
 
-const desc = "selesa cloud data"
-const login = (token) => {
-	octokit.authenticate({
-		type: 'token',
-		token: token
-	})
+const desc = 'selesa cloud data'
+
+const getOctokit = (token)=> {
+	return new Octokit({ auth: token })
 }
 
-
-module.exports = {
-	createGist(token) {
-		login(token)
+export default {
+	createGist(token){
+		const octokit = getOctokit(token)
 		return octokit.gists.create({
 			description: desc,
 			files: {
-				"..selesa": {
-					content: ".selesa place holder"
-				}
+				'..selesa': {
+					content: '.selesa place holder',
+				},
 			},
-			public: false
-		}).then(result => {
-			//result.status !== 201
+			public: false,
+		}).then((result)=> {
 			return result.data.id
 		})
 	},
-	update(token, id, files) {
-		login(token)
-		return octokit.gists.edit({
+	deleteGist(token, id){
+		const octokit = getOctokit(token)
+		return octokit.gists.delete({
+			gist_id: id,
+		})
+	},
+	update(token, id, files){
+		// if there's an empty file, we need to delete it from the gist, to avoid error 422
+		Object.entries(files).forEach(([key, file])=> {
+			if(!file.content){
+				delete files[key]
+				return null
+			}
+			if (file.content.trim() === ''){
+				delete files[key]
+				return null
+			}
+		})
+		const octokit = getOctokit(token)
+		return octokit.gists.update({
 			gist_id: id,
 			description: desc,
 			files,
 		})
 	},
-	query(token, id) {
-		login(token)
+	query(token, id){
+		const octokit = getOctokit(token)
 		return octokit.gists.get({
 			gist_id: id,
-		}).then(result => {
+		}).then((result)=> {
 			return {
-				".bashrc": result.data.files[".bashrc"].content,
-				".bash_profile": result.data.files[".bash_profile"].content,
-				".vimrc": result.data.files[".vimrc"].content,
+				'.bashrc': result.data.files['.bashrc']?.content,
+				'.bash_profile': result.data.files['.bash_profile']?.content,
+				'helix_config.toml': result.data.files['helix_config.toml']?.content,
+				'helix_languages.toml': result.data.files['helix_languages.toml']?.content,
+				'.gitconfig': result.data.files['.gitconfig']?.content,
+				config: result.data.files['config']?.content,
 			}
 		})
 	},
