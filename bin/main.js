@@ -370,6 +370,28 @@ argv.usage('usage: $0 <cmd>')
 				logger.error('[selesa][create]: failed to create gist:', e)
 			})
 	})
+	.command('clean', 'to empty the backup directory', ()=> { }, ()=> {
+		logger.info('[selesa][clean]: emptying backup directory')
+		return fsPromises.readdir(selesaPaths.selesaBackupDir).then((files)=> {
+			const deletePromises = files.map((file)=> {
+				const filePath = path.join(selesaPaths.selesaBackupDir, file)
+				return fsPromises.unlink(filePath)
+			})
+			return Promise.all(deletePromises)
+		}).then(()=> {
+			logger.info('[selesa][clean]: backup directory emptied successfully')
+			console.log('\r\nBackup directory emptied successfully!\r\n')
+			return null
+		})
+			.catch((e)=> {
+				if (e?.code === 'ENOENT'){
+					logger.info('[selesa][clean]: backup directory does not exist, nothing to clean')
+					console.log('\r\nBackup directory does not exist, nothing to clean!\r\n')
+					return null
+				}
+				logger.error('[selesa][clean]: failed to empty backup directory:', e)
+			})
+	})
 	.demandCommand(1, 'You need at least one command before moving on')
 	.scriptName('selesa')
 	.alias('help', 'h')
