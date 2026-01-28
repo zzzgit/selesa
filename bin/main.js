@@ -7,6 +7,7 @@ import { hideBin } from 'yargs/helpers'
 import packageJson from '../package.json' with { type: 'json' }
 import gist from './gist.js'
 import { ensureDir } from 'dakini'
+import { getLogger } from './log.js'
 import {
 	createBackup,
 	detectBashConfigFile,
@@ -64,11 +65,12 @@ const getFilePathMap = (part)=> {
 	return result
 }
 
-// const logger = logFactory.getLogger(log)
-const logger = console
 const time_s = generateTimestamp()
 const version = packageJson.version
 let meta = {}
+
+const selesaPaths = detectSelesaConfigPath()
+const logger = getLogger(selesaPaths.selesaLogDir)
 
 const ensureConfigFiles = async(paths)=> {
 	logger.info('[selesa]: ensure cache folder and configuration files')
@@ -78,7 +80,6 @@ const ensureConfigFiles = async(paths)=> {
 	await fsPromises.appendFile(paths.selesaConfig, '')
 }
 
-const selesaPaths = detectSelesaConfigPath()
 await ensureConfigFiles(selesaPaths)
 
 const saveConfig = (config)=> {
