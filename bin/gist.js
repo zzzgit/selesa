@@ -53,7 +53,6 @@ export default {
 		}).then((result)=> {
 			return {
 				'.bashrc': result.data.files['.bashrc']?.content,
-				'.bash_profile': result.data.files['.bash_profile']?.content,
 				'helix_config.toml': result.data.files['helix_config.toml']?.content,
 				'helix_languages.toml': result.data.files['helix_languages.toml']?.content,
 				'.gitconfig': result.data.files['.gitconfig']?.content,

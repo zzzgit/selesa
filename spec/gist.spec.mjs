@@ -53,7 +53,6 @@ describe('gist.js', ()=> {
 
 			expect(result).toBeDefined()
 			expect(result['.bashrc']).toBeUndefined()
-			expect(result['.bash_profile']).toBeUndefined()
 			expect(result['helix_config.toml']).toBeUndefined()
 			expect(result['helix_languages.toml']).toBeUndefined()
 			expect(result['.gitconfig']).toBeUndefined()
