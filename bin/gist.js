@@ -57,6 +57,7 @@ export default {
 				'helix_config.toml': result.data.files['helix_config.toml']?.content,
 				'helix_languages.toml': result.data.files['helix_languages.toml']?.content,
 				'.gitconfig': result.data.files['.gitconfig']?.content,
+				'Microsoft.PowerShell_profile.ps1': result.data.files['Microsoft.PowerShell_profile.ps1']?.content,
 				config: result.data.files['config']?.content,
 			}
 		})

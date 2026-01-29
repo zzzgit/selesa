@@ -116,6 +116,13 @@ const detectBashConfigFile = ()=> {
 	return path.join(homedir, '.bashrc')
 }
 
+const detectPowerShellConfigFile = ()=> {
+	if (os.platform() === 'win32'){
+		return path.join(homedir, 'Documents', 'PowerShell', 'Microsoft.PowerShell_profile.ps1')
+	}
+	return path.join(_getXDGConfigDirUnix(), 'powershell', 'Microsoft.PowerShell_profile.ps1')
+}
+
 const _getTraditionalConfigDirUnix = ()=> {
 	return homedir
 }
@@ -183,5 +190,6 @@ export {
 	detectBashConfigFile,
 	isWindows11,
 	isWindows,
+	detectPowerShellConfigFile,
 
 }
