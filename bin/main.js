@@ -13,6 +13,7 @@ import {
 	detectBashConfigFile,
 	detectGitConfigGlobalFile,
 	detectHelixConfigDir,
+	detectNushellConfigFile,
 	detectPowerShellConfigFile,
 	detectSelesaConfigPath,
 	detectStarshipConfigFile,
@@ -47,6 +48,9 @@ const getFilePathMap = (part)=> {
 		},
 		powershell: {
 			'Microsoft.PowerShell_profile.ps1': detectPowerShellConfigFile(),
+		},
+		nushell: {
+			'config.nu': detectNushellConfigFile(),
 		},
 		starship: {
 			'starship.toml': detectStarshipConfigFile(),
@@ -164,6 +168,9 @@ const downloadAll = async()=> {
 	if (content['Microsoft.PowerShell_profile.ps1']){
 		await backupAndReplace(content, 'Microsoft.PowerShell_profile.ps1', filePathMap.get('Microsoft.PowerShell_profile.ps1'))
 	}
+	if (content['config.nu']){
+		await backupAndReplace(content, 'config.nu', filePathMap.get('config.nu'))
+	}
 	if (content['starship.toml']){
 		await backupAndReplace(content, 'starship.toml', filePathMap.get('starship.toml'))
 	}
@@ -207,6 +214,14 @@ const downloadPowerShell = async()=> {
 	}
 }
 
+const downloadNushell = async()=> {
+	const content = await fetchAll()
+	const filePathMap = getFilePathMap('nushell')
+	if(content['config.nu']){
+		await backupAndReplace(content, 'config.nu', filePathMap.get('config.nu'))
+	}
+}
+
 const downloadStarship = async()=> {
 	const content = await fetchAll()
 	const filePathMap = getFilePathMap('starship')
@@ -233,7 +248,7 @@ argv.usage('usage: $0 <cmd>')
 	.command('upload [part]', 'to upload your configurations to cloud', (yargs)=> {
 		yargs.positional('part', {
 			type: 'string',
-			choices: ['all', 'bash', 'helix', 'git', 'powershell', 'starship', 'tig'],
+			choices: ['all', 'bash', 'helix', 'git', 'powershell', 'nushell', 'starship', 'tig'],
 			alias: 'p',
 			default: 'all',
 			describe: 'which part do you want to upload',
@@ -258,6 +273,9 @@ argv.usage('usage: $0 <cmd>')
 			case 'powershell':
 				upload('powershell').catch(e=> delete e.headers && logger.error('[selesa][up]: failed to upload part powershell:', e))
 				break
+			case 'nushell':
+				upload('nushell').catch(e=> delete e.headers && logger.error('[selesa][up]: failed to upload part nushell:', e))
+				break
 			case 'starship':
 				upload('starship').catch(e=> delete e.headers && logger.error('[selesa][up]: failed to upload part starship:', e))
 				break
@@ -273,7 +291,7 @@ argv.usage('usage: $0 <cmd>')
 		yargs.positional('part', {
 			type: 'string',
 			alias: 'p',
-			choices: ['all', 'bash', 'helix', 'git', 'powershell', 'starship', 'tig'],
+			choices: ['all', 'bash', 'helix', 'git', 'powershell', 'nushell', 'starship', 'tig'],
 			default: 'all',
 			describe: 'which part do you want to download',
 		})
@@ -293,6 +311,9 @@ argv.usage('usage: $0 <cmd>')
 				break
 			case 'powershell':
 				downloadPowerShell().catch(e=> delete e.headers && logger.error('[selesa][down]: failed to download part powershell:', e))
+				break
+			case 'nushell':
+				downloadNushell().catch(e=> delete e.headers && logger.error('[selesa][down]: failed to download part nushell:', e))
 				break
 			case 'starship':
 				downloadStarship().catch(e=> delete e.headers && logger.error('[selesa][down]: failed to download part starship:', e))

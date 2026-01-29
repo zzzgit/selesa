@@ -133,6 +133,16 @@ const detectStarshipConfigFile = ()=> {
 	return path.join(homedir, '.config', 'starship.toml')
 }
 
+const detectNushellConfigFile = ()=> {
+	if (os.platform() === 'win32'){
+		return path.join(_getAppDataPathWindows11(), 'nushell', 'config.nu')
+	}
+	if(os.platform() === 'darwin'){
+		return path.join(homedir, 'Library', 'Application Support', 'nushell', 'config.nu')
+	}
+	return path.join(_getXDGConfigDirUnix(), 'nushell', 'config.nu')
+}
+
 const _getTraditionalConfigDirUnix = ()=> {
 	return homedir
 }
@@ -202,5 +212,5 @@ export {
 	isWindows,
 	detectPowerShellConfigFile,
 	detectStarshipConfigFile,
-
+	detectNushellConfigFile,
 }
