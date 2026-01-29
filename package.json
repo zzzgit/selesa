@@ -1,6 +1,6 @@
 {
   "name": "selesa",
-  "version": "26.0.1",
+  "version": "26.0.2",
   "description": "a npm package for .bashrc synchronization",
   "repository": {
     "type": "git",
