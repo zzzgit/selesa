@@ -15,6 +15,7 @@ import {
 	detectHelixConfigDir,
 	detectPowerShellConfigFile,
 	detectSelesaConfigPath,
+	detectStarshipConfigFile,
 	detectTigConfigFile,
 	generateTimestamp,
 	getMetaFromConfig,
@@ -46,6 +47,9 @@ const getFilePathMap = (part)=> {
 		},
 		powershell: {
 			'Microsoft.PowerShell_profile.ps1': detectPowerShellConfigFile(),
+		},
+		starship: {
+			'starship.toml': detectStarshipConfigFile(),
 		},
 		tig: {
 			config: detectTigConfigFile(),
@@ -160,6 +164,9 @@ const downloadAll = async()=> {
 	if (content['Microsoft.PowerShell_profile.ps1']){
 		await backupAndReplace(content, 'Microsoft.PowerShell_profile.ps1', filePathMap.get('Microsoft.PowerShell_profile.ps1'))
 	}
+	if (content['starship.toml']){
+		await backupAndReplace(content, 'starship.toml', filePathMap.get('starship.toml'))
+	}
 	if (content['config']){
 		await backupAndReplace(content, 'config', filePathMap.get('config'))
 	}
@@ -200,6 +207,14 @@ const downloadPowerShell = async()=> {
 	}
 }
 
+const downloadStarship = async()=> {
+	const content = await fetchAll()
+	const filePathMap = getFilePathMap('starship')
+	if(content['starship.toml']){
+		await backupAndReplace(content, 'starship.toml', filePathMap.get('starship.toml'))
+	}
+}
+
 const backupAndReplace = async(fetched, fileName, originalFile)=> {
 	await createBackup(originalFile, selesaPaths.selesaBackupDir, fileName, time_s)
 	await fsPromises.writeFile(originalFile, fetched[fileName])
@@ -218,7 +233,7 @@ argv.usage('usage: $0 <cmd>')
 	.command('upload [part]', 'to upload your configurations to cloud', (yargs)=> {
 		yargs.positional('part', {
 			type: 'string',
-			choices: ['all', 'bash', 'helix', 'git', 'powershell', 'tig'],
+			choices: ['all', 'bash', 'helix', 'git', 'powershell', 'starship', 'tig'],
 			alias: 'p',
 			default: 'all',
 			describe: 'which part do you want to upload',
@@ -243,6 +258,9 @@ argv.usage('usage: $0 <cmd>')
 			case 'powershell':
 				upload('powershell').catch(e=> delete e.headers && logger.error('[selesa][up]: failed to upload part powershell:', e))
 				break
+			case 'starship':
+				upload('starship').catch(e=> delete e.headers && logger.error('[selesa][up]: failed to upload part starship:', e))
+				break
 			case 'tig':
 				upload('tig').catch(e=> delete e.headers && logger.error('[selesa][up]: failed to upload part tig:', e))
 				break
@@ -255,7 +273,7 @@ argv.usage('usage: $0 <cmd>')
 		yargs.positional('part', {
 			type: 'string',
 			alias: 'p',
-			choices: ['all', 'bash', 'helix', 'git', 'powershell', 'tig'],
+			choices: ['all', 'bash', 'helix', 'git', 'powershell', 'starship', 'tig'],
 			default: 'all',
 			describe: 'which part do you want to download',
 		})
@@ -275,6 +293,9 @@ argv.usage('usage: $0 <cmd>')
 				break
 			case 'powershell':
 				downloadPowerShell().catch(e=> delete e.headers && logger.error('[selesa][down]: failed to download part powershell:', e))
+				break
+			case 'starship':
+				downloadStarship().catch(e=> delete e.headers && logger.error('[selesa][down]: failed to download part starship:', e))
 				break
 			case 'tig':
 				downloadTig().catch(e=> delete e.headers && logger.error('[selesa][down]: failed to download part tig:', e))

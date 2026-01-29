@@ -123,6 +123,16 @@ const detectPowerShellConfigFile = ()=> {
 	return path.join(_getXDGConfigDirUnix(), 'powershell', 'Microsoft.PowerShell_profile.ps1')
 }
 
+const detectStarshipConfigFile = ()=> {
+	if (process.env.STARSHIP_CONFIG){
+		return process.env.STARSHIP_CONFIG
+	}
+	if(process.env.XDG_CONFIG_HOME){
+		return path.join(_getXDGConfigDirUnix(), 'starship.toml')
+	}
+	return path.join(homedir, '.config', 'starship.toml')
+}
+
 const _getTraditionalConfigDirUnix = ()=> {
 	return homedir
 }
@@ -191,5 +201,6 @@ export {
 	isWindows11,
 	isWindows,
 	detectPowerShellConfigFile,
+	detectStarshipConfigFile,
 
 }
