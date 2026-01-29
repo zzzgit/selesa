@@ -11,6 +11,7 @@ import { getLogger } from './log.js'
 import {
 	createBackup,
 	detectBashConfigFile,
+	detectFishConfigFile,
 	detectGitConfigGlobalFile,
 	detectHelixConfigDir,
 	detectNushellConfigFile,
@@ -38,6 +39,9 @@ const getFilePathMap = (part)=> {
 	const mappings = {
 		bash: {
 			'.bashrc': detectBashConfigFile(),
+		},
+		fish: {
+			'config.fish': detectFishConfigFile(),
 		},
 		helix: {
 			'helix_config.toml': path.join(detectHelixConfigDir(), 'config.toml'),
@@ -156,6 +160,9 @@ const downloadAll = async()=> {
 	if (content['.bashrc']){
 		await backupAndReplace(content, '.bashrc', filePathMap.get('.bashrc'))
 	}
+	if (content['config.fish']){
+		await backupAndReplace(content, 'config.fish', filePathMap.get('config.fish'))
+	}
 	if (content['helix_config.toml']){
 		await backupAndReplace(content, 'helix_config.toml', filePathMap.get('helix_config.toml'))
 	}
@@ -184,6 +191,14 @@ const downloadBash = async()=> {
 	const filePathMap = getFilePathMap('bash')
 	if(content['.bashrc']){
 		await backupAndReplace(content, '.bashrc', filePathMap.get('.bashrc'))
+	}
+}
+
+const downloadFish = async()=> {
+	const content = await fetchAll()
+	const filePathMap = getFilePathMap('fish')
+	if(content['config.fish']){
+		await backupAndReplace(content, 'config.fish', filePathMap.get('config.fish'))
 	}
 }
 
@@ -248,7 +263,7 @@ argv.usage('usage: $0 <cmd>')
 	.command('upload [part]', 'to upload your configurations to cloud', (yargs)=> {
 		yargs.positional('part', {
 			type: 'string',
-			choices: ['all', 'bash', 'helix', 'git', 'powershell', 'nushell', 'starship', 'tig'],
+			choices: ['all', 'bash', 'fish', 'helix', 'git', 'powershell', 'nushell', 'starship', 'tig'],
 			alias: 'p',
 			default: 'all',
 			describe: 'which part do you want to upload',
@@ -263,6 +278,9 @@ argv.usage('usage: $0 <cmd>')
 				break
 			case 'bash':
 				upload('bash').catch(e=> delete e.headers && logger.error('[selesa][up]: failed to upload part bash:', e))
+				break
+			case 'fish':
+				upload('fish').catch(e=> delete e.headers && logger.error('[selesa][up]: failed to upload part fish:', e))
 				break
 			case 'helix':
 				upload('helix').catch(e=> delete e.headers && logger.error('[selesa][up]: failed to upload part helix:', e))
@@ -291,7 +309,7 @@ argv.usage('usage: $0 <cmd>')
 		yargs.positional('part', {
 			type: 'string',
 			alias: 'p',
-			choices: ['all', 'bash', 'helix', 'git', 'powershell', 'nushell', 'starship', 'tig'],
+			choices: ['all', 'bash', 'fish', 'helix', 'git', 'powershell', 'nushell', 'starship', 'tig'],
 			default: 'all',
 			describe: 'which part do you want to download',
 		})
@@ -302,6 +320,9 @@ argv.usage('usage: $0 <cmd>')
 		switch (argv.part){
 			case 'bash':
 				downloadBash().catch(e=> delete e.headers && logger.error('[selesa][down]: failed to download part bash:', e))
+				break
+			case 'fish':
+				downloadFish().catch(e=> delete e.headers && logger.error('[selesa][down]: failed to download part fish:', e))
 				break
 			case 'helix':
 				downloadHelix().catch(e=> delete e.headers && logger.error('[selesa][down]: failed to download part helix:', e))
