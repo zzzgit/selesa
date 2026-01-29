@@ -1,19 +1,50 @@
 import fs from 'fs'
 import path from 'path'
-import os from 'os'
+import os from 'node:os'
 import {
 	checkExistence,
 	createBackup,
 	decrypt,
+	detectBashConfigFile,
+	detectGitConfigGlobalFile,
+	detectHelixConfigDir,
+	detectSelesaConfigPath,
+	detectTigConfigFile,
 	encrypt,
 	generateTimestamp,
 	getMetaFromConfig,
+	isWindows,
+	isWindows11,
 	readConfig,
 	validateConfig,
 	writeIni,
 } from '../bin/utils.js'
 
 describe('utils.js', ()=> {
+	beforeAll(()=> {
+		jasmine.getEnv().allowRespy(true)
+	})
+
+	const originalEnv = { ...process.env }
+
+	afterEach(()=> {
+		Object.keys(process.env).forEach((key)=> {
+			if (!(key in originalEnv)){
+				delete process.env[key]
+			}
+		})
+		Object.keys(originalEnv).forEach((key)=> {
+			process.env[key] = originalEnv[key]
+		})
+
+		if (os.platform.and){
+			os.platform.and.callThrough()
+		}
+		if (os.release.and){
+			os.release.and.callThrough()
+		}
+	})
+
 	describe('generateTimestamp', ()=> {
 		it('should return a string starting with "v"', ()=> {
 			const timestamp = generateTimestamp()
@@ -230,6 +261,127 @@ describe('utils.js', ()=> {
 			const timestamp = 'v2025-12-20T10.30.00'
 			const result = createBackup(testSourcePath, testBackupDir, 'source', timestamp)
 			expect(result).toBeInstanceOf(Promise)
+		})
+	})
+
+	describe('detectGitConfigGlobalFile', ()=> {
+		it('should return GIT_CONFIG_GLOBAL when set', ()=> {
+			process.env.GIT_CONFIG_GLOBAL = path.join('tmp', 'custom.gitconfig')
+			const result = detectGitConfigGlobalFile()
+			expect(result).toBe(process.env.GIT_CONFIG_GLOBAL)
+		})
+
+		it('should use XDG_CONFIG_HOME when set', ()=> {
+			delete process.env.GIT_CONFIG_GLOBAL
+			process.env.XDG_CONFIG_HOME = path.join('tmp', 'xdg')
+			const result = detectGitConfigGlobalFile()
+			expect(result).toBe(path.join(process.env.XDG_CONFIG_HOME, 'git', 'config'))
+		})
+
+		it('should fallback to ~/.gitconfig when no env set', ()=> {
+			delete process.env.GIT_CONFIG_GLOBAL
+			delete process.env.XDG_CONFIG_HOME
+			const result = detectGitConfigGlobalFile()
+			expect(result).toBe(path.join(os.homedir(), '.gitconfig'))
+		})
+	})
+
+	describe('detectTigConfigFile', ()=> {
+		it('should return TIGRC_USER when set', ()=> {
+			process.env.TIGRC_USER = path.join('tmp', 'custom.tigrc')
+			const result = detectTigConfigFile()
+			expect(result).toBe(process.env.TIGRC_USER)
+		})
+
+		it('should use XDG_CONFIG_HOME when set', ()=> {
+			delete process.env.TIGRC_USER
+			process.env.XDG_CONFIG_HOME = path.join('tmp', 'xdg')
+			const result = detectTigConfigFile()
+			expect(result).toBe(path.join(process.env.XDG_CONFIG_HOME, 'tig', 'config'))
+		})
+
+		it('should fallback to ~/.tigrc when no env set', ()=> {
+			delete process.env.TIGRC_USER
+			delete process.env.XDG_CONFIG_HOME
+			const result = detectTigConfigFile()
+			expect(result).toBe(path.join(os.homedir(), '.tigrc'))
+		})
+	})
+
+	describe('detectHelixConfigDir', ()=> {
+		it('should use APPDATA on Windows', ()=> {
+			process.env.APPDATA = path.join('tmp', 'appdata')
+			spyOn(os, 'platform').and.returnValue('win32')
+			const result = detectHelixConfigDir()
+			expect(result).toBe(path.join(process.env.APPDATA, 'helix'))
+		})
+
+		it('should use XDG_CONFIG_HOME on Unix', ()=> {
+			process.env.XDG_CONFIG_HOME = path.join('tmp', 'xdg')
+			spyOn(os, 'platform').and.returnValue('linux')
+			const result = detectHelixConfigDir()
+			expect(result).toBe(path.join(process.env.XDG_CONFIG_HOME, 'helix'))
+		})
+	})
+
+	describe('detectSelesaConfigPath', ()=> {
+		it('should use APPDATA and LOCALAPPDATA on Windows', ()=> {
+			process.env.APPDATA = path.join('tmp', 'appdata')
+			process.env.LOCALAPPDATA = path.join('tmp', 'localappdata')
+			spyOn(os, 'platform').and.returnValue('win32')
+			const result = detectSelesaConfigPath()
+			expect(result.selesaConfig).toBe(path.join(process.env.APPDATA, 'selesa', 'config.ini'))
+			expect(result.selesaBackupDir).toBe(path.join(process.env.LOCALAPPDATA, 'selesa', 'Backups'))
+			expect(result.selesaLogDir).toBe(path.join(process.env.LOCALAPPDATA, 'selesa', 'Logs'))
+		})
+
+		it('should use XDG dirs on Unix', ()=> {
+			process.env.XDG_CONFIG_HOME = path.join('tmp', 'xdg-config')
+			process.env.XDG_DATA_HOME = path.join('tmp', 'xdg-data')
+			process.env.XDG_STATE_HOME = path.join('tmp', 'xdg-state')
+			spyOn(os, 'platform').and.returnValue('linux')
+			const result = detectSelesaConfigPath()
+			expect(result.selesaConfig).toBe(path.join(process.env.XDG_CONFIG_HOME, 'selesa', 'config.ini'))
+			expect(result.selesaBackupDir).toBe(path.join(process.env.XDG_DATA_HOME, 'selesa', 'backups'))
+			expect(result.selesaLogDir).toBe(path.join(process.env.XDG_STATE_HOME, 'selesa', 'logs'))
+		})
+	})
+
+	describe('detectBashConfigFile', ()=> {
+		it('should return ~/.bashrc path', ()=> {
+			const result = detectBashConfigFile()
+			expect(result).toBe(path.join(os.homedir(), '.bashrc'))
+		})
+	})
+
+	describe('isWindows', ()=> {
+		it('should return true on win32', ()=> {
+			spyOn(os, 'platform').and.returnValue('win32')
+			expect(isWindows()).toBe(true)
+		})
+
+		it('should return false on non-win32', ()=> {
+			spyOn(os, 'platform').and.returnValue('linux')
+			expect(isWindows()).toBe(false)
+		})
+	})
+
+	describe('isWindows11', ()=> {
+		it('should return true for build >= 22000 on win32', ()=> {
+			spyOn(os, 'platform').and.returnValue('win32')
+			spyOn(os, 'release').and.returnValue('10.0.22000')
+			expect(isWindows11()).toBe(true)
+		})
+
+		it('should return false for build < 22000 on win32', ()=> {
+			spyOn(os, 'platform').and.returnValue('win32')
+			spyOn(os, 'release').and.returnValue('10.0.19045')
+			expect(isWindows11()).toBe(false)
+		})
+
+		it('should return false on non-win32', ()=> {
+			spyOn(os, 'platform').and.returnValue('linux')
+			expect(isWindows11()).toBe(false)
 		})
 	})
 })
