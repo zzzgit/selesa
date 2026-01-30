@@ -143,6 +143,14 @@ const detectNushellConfigFile = ()=> {
 	return path.join(_getXDGConfigDirUnix(), 'nushell', 'config.nu')
 }
 
+const detectFishConfigFile = ()=> {
+	// $__fish_config_dir
+	if(process.env.FISH_CONFIG_DIR){
+		return path.join(process.env.FISH_CONFIG_DIR, 'config.fish')
+	}
+	return path.join(_getXDGConfigDirUnix(), 'fish', 'config.fish')
+}
+
 const _getTraditionalConfigDirUnix = ()=> {
 	return homedir
 }
@@ -213,4 +221,5 @@ export {
 	detectPowerShellConfigFile,
 	detectStarshipConfigFile,
 	detectNushellConfigFile,
+	detectFishConfigFile,
 }
