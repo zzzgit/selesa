@@ -11,7 +11,7 @@ Sync shell and app configs across machines via GitHub Gists.
 
 ## Installation
 
-Requires Node.js 22+ and npm 10+.
+Requires Node.js 24+ and npm 10+.
 
 ```bash
 npm install -g selesa
