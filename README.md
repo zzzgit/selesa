@@ -1,41 +1,59 @@
 # selesa
 
-A CLI tool for configuration synchronizing implemented in JavaScript.
+Sync shell and app configs across machines via GitHub Gists.
 
 ## Features
 
-Selesa synchronizes shell and application configurations across machines using GitHub Gists as cloud storage. It supports multiple configuration files including `.bashrc`, `.gitconfig`, Helix editor configs, and Tig configurations.
+- Sync via GitHub Gists
+- Supports bash, git, Helix, PowerShell, Nushell, Starship, Tig
+- Automatic backups before download
+- Windows 11, macOS, Linux
 
 ## Installation
 
-Requires Node.js 22+ and npm 10+. Install globally to use the `selesa` command:
+Requires Node.js 22+ and npm 10+.
+
+```bash
+npm install -g selesa
+```
+
+macOS:
 
 ```bash
 sudo npm install -g selesa
 ```
 
-## Usage
-
-Selesa provides commands for pushing, pulling, and managing your configuration synchronization:
+## Quick start
 
 ```bash
-selesa push     # Upload local configs to GitHub Gist
-selesa pull     # Download configs from GitHub Gist
-selesa paths    # Display configuration file paths
-selesa backup   # Create configuration backups
+selesa config set --token <your-token> --gistid <your-gist-id>
+selesa upload all
+selesa download all
+```
+
+## Commands
+
+```bash
+selesa upload [all|bash|helix|git|powershell|nushell|starship|tig]
+selesa download [all|bash|helix|git|powershell|nushell|starship|tig]
+
+selesa config set --token <token> --gistid <gistid>
+selesa config get --token|--gistid
+selesa config open
+selesa config reset
+
+selesa create    # Create a private gist and save its id
+selesa delete    # Delete the configured gist
+selesa clean     # Clear backup directory
+selesa paths     # Show local config/cache paths
 ```
 
 ## Configuration
 
-Create configuration at `~/.config/selesa/config.ini` with your GitHub token and Gist ID. The tool automatically detects configuration file locations across different operating systems.
+Config file:
 
-## Features
-
-- **Multi-platform support**: Windows 11, macOS, and Linux
-- **Secure storage**: GitHub token encryption using simple XOR cipher
-- **Multiple configs**: Supports bash, git, Helix editor, and Tig
-- **Backup management**: Automatic backups before synchronization
-- **Detailed logging**: Separate info and error logs in `~/.selesa/logs/`
+- Windows 11: %APPDATA%\selesa\config.ini
+- macOS/Linux: $XDG_CONFIG_HOME/selesa/config.ini (fallback: ~/.config/selesa/config.ini)
 
 ## Development
 
