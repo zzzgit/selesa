@@ -24,7 +24,7 @@
   },
   "engines": {
     "npm": ">=10",
-    "node": ">=22"
+    "node": ">=24"
   },
   "author": "jonkee",
   "license": "ISC",
